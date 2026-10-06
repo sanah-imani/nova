@@ -3,6 +3,8 @@ LD=ld.lld
 
 CFLAGS=-ffreestanding -O2 -Wall -Wextra -nostdlib -fno-stack-protector \
        -target x86_64-unknown-none \
+       -mcmodel=kernel \
+       -MMD -MP \
        -I third_party/limine \
        -I kernel
 
@@ -11,14 +13,20 @@ LDFLAGS=-T linker.ld -m elf_x86_64
 KERNEL=kernel.elf
 ISO=nova.iso
 
+SRCS := $(shell find boot kernel -name '*.c')
+OBJS := $(patsubst %.c,build/%.o,$(SRCS))
+DEPS := $(OBJS:.o=.d)
+
 all: run
 
-# Build kernel
-kernel.o:
-	$(CC) $(CFLAGS) -c kernel/main.c -o kernel.o
+# Compile each source file into build/
+build/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(KERNEL): kernel.o
-	$(LD) $(LDFLAGS) kernel.o -o $(KERNEL)
+# Link all objects
+$(KERNEL): $(OBJS)
+	$(LD) $(LDFLAGS) $(OBJS) -o $(KERNEL)
 
 # Create ISO
 iso: $(KERNEL)
@@ -40,5 +48,8 @@ iso: $(KERNEL)
 
 run: iso
 	qemu-system-x86_64 -cdrom $(ISO) -m 512M
+
 clean:
-	rm -rf *.o *.elf iso *.iso
+	rm -rf build *.elf iso *.iso
+
+-include $(DEPS)

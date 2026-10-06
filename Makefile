@@ -4,6 +4,7 @@ LD=ld.lld
 CFLAGS=-ffreestanding -O2 -Wall -Wextra -nostdlib -fno-stack-protector \
        -target x86_64-unknown-none \
        -mcmodel=kernel \
+       -mno-80387 -mno-mmx -mno-sse -mno-sse2 -mno-red-zone \
        -MMD -MP \
        -I third_party/limine \
        -I kernel
@@ -16,6 +17,8 @@ ISO=nova.iso
 SRCS := $(shell find boot kernel -name '*.c')
 OBJS := $(patsubst %.c,build/%.o,$(SRCS))
 DEPS := $(OBJS:.o=.d)
+
+.PHONY: all iso run clean
 
 all: run
 

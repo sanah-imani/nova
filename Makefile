@@ -3,7 +3,8 @@ LD=ld.lld
 
 CFLAGS=-ffreestanding -O2 -Wall -Wextra -nostdlib -fno-stack-protector \
        -target x86_64-unknown-none \
-       -I third_party/limine
+       -I third_party/limine \
+       -I kernel
 
 LDFLAGS=-T linker.ld -m elf_x86_64
 
